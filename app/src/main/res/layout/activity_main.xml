@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.lp.mvp_network.activity.MainActivity">
+
+    <include layout="@layout/app_title" />
+
+    <Button
+        android:id="@+id/btn_first"
+        style="@style/button_style"
+        android:text="网络请求" />
+
+    <Button
+        android:id="@+id/btn_second"
+        style="@style/button_style"
+        android:text="上传图片" />
+    <Button
+        android:id="@+id/btn_third"
+        style="@style/button_style"
+        android:text="特殊结构演示" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_marginTop="12dp"
+        android:layout_height="match_parent">
+        <TextView
+            android:id="@+id/tv_text"
+            android:layout_width="match_parent"
+            android:textColor="@color/colorAccent"
+            android:layout_height="match_parent" />
+    </ScrollView>
+
+</LinearLayout>
