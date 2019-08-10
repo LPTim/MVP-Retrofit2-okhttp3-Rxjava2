@@ -9,45 +9,36 @@ import java.io.Serializable;
  * @date 2018/6/19
  */
 public class BaseModel<T> implements Serializable {
-    private String msg;
-    private int code;
-    private T data;
+    private String reason;
+    private int error_code;
+    private T result;
 
-    public BaseModel(String message, int code) {
-        this.msg = message;
-        this.code = code;
+    public BaseModel(String reason, int error_code) {
+        this.reason = reason;
+        this.error_code = error_code;
     }
 
-    public int getErrcode() {
-        return code;
+    public String getReason() {
+        return reason;
     }
 
-    public void setErrcode(int code) {
-        this.code = code;
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 
-    public String getErrmsg() {
-        return msg;
+    public int getError_code() {
+        return error_code;
     }
 
-    public void setErrmsg(String message) {
-        this.msg = message;
+    public void setError_code(int error_code) {
+        this.error_code = error_code;
     }
 
-    public T getData() {
-        return data;
+    public T getResult() {
+        return result;
     }
 
-    public void setData(T result) {
-        this.data = result;
-    }
-
-    @Override
-    public String toString() {
-        return "BaseModel{" +
-                "code=" + code +
-                ", msg='" + msg + '\'' +
-                ", result=" + data +
-                '}';
+    public void setResult(T result) {
+        this.result = result;
     }
 }

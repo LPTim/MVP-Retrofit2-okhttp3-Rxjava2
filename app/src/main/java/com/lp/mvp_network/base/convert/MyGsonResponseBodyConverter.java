@@ -49,10 +49,10 @@ final class MyGsonResponseBodyConverter<T> implements Converter<ResponseBody, T>
         BaseModel re = gson.fromJson(response, BaseModel.class);
         //关注的重点，自定义响应码中非0的情况，一律抛出ApiException异常。
         //这样，我们就成功的将该异常交给onError()去处理了。
-        if (re.getErrcode() != BaseContent.basecode) {
+       /* if (re.getErrcode() != BaseContent.basecode) {
             value.close();
             throw new ApiException(re.getErrcode(), re.getErrmsg());
-        }
+        }*/
 
         MediaType mediaType = value.contentType();
         Charset charset = mediaType != null ? mediaType.charset(UTF_8) : UTF_8;

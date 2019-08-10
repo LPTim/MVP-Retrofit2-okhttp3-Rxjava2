@@ -6,13 +6,19 @@ import android.widget.TextView;
 
 import com.lp.mvp_network.R;
 import com.lp.mvp_network.second2demo.BaseActivity;
+import com.lp.mvp_network.second2demo.api.ApiRetrofit;
 import com.lp.mvp_network.second2demo.bean.Bean1;
 import com.lp.mvp_network.second2demo.bean.Bean2;
 import com.lp.mvp_network.second2demo.bean.Bean3;
 import com.lp.mvp_network.second2demo.mvp.BaseModel;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 
 public class SecondActivity extends BaseActivity<SecondPresenter> implements SecondView, View.OnClickListener {
     private TextView mTvText;
@@ -23,6 +29,7 @@ public class SecondActivity extends BaseActivity<SecondPresenter> implements Sec
 //        super.onErrorCode(model);
         //我要自定义
         //实现自己的逻辑
+        Log.e("onErrorCode", "onErrorCode");
     }
 
     @Override
@@ -32,6 +39,8 @@ public class SecondActivity extends BaseActivity<SecondPresenter> implements Sec
         } else {
             super.showError(msg);
         }
+
+        Log.e("showError", "showError");
 
     }
 
@@ -89,10 +98,14 @@ public class SecondActivity extends BaseActivity<SecondPresenter> implements Sec
                         "content",
                         RetrofitUtil.filesToMultipartBodyParts(RetrofitUtil.initImages(strings), "tupian.key"));
                 break;*/
+            case R.id.btn_third:
+                break;
         }
 
 
     }
+
+
 
 
 /*

@@ -1,5 +1,7 @@
 package com.lp.mvp_network.base;
 
+import android.os.Environment;
+
 /**
  * File descripition:
  *
@@ -9,7 +11,9 @@ package com.lp.mvp_network.base;
 
 public class BaseContent {
     //base Ip
-    public static String baseUrl = "http://www.energy-link.com.cn/";
+    public static String baseUrl = "http://v.juhe.cn/toutiao/";
+    //视频文件存储路径
+    public static String baseFileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + "mvp_network/";
     //服务器返回成功的 cdoe
-    public static int basecode = 1;
+    public static int basecode = 0;
 }

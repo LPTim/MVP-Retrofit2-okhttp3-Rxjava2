@@ -42,12 +42,20 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
     //cookie管理
     implementation 'com.github.franmontiel:PersistentCookieJar:v1.0.1'
+    //日志
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
 
     //日志
     implementation 'com.orhanobut:logger:2.2.0'
     //toast
     implementation 'com.hjq:toast:5.8'
 
-    //水波纹 与此项目没有关系
+    //水波纹
     implementation 'com.scwang.wave:MultiWaveHeader:1.0.0-alpha-1'
+    //权限申请
+    implementation 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.5@aar'
+    //下载动画
+    implementation 'com.github.Ajian-studio:GADownloading:v1.0.2'
+    //工具类
+    implementation 'com.blankj:utilcode:1.23.7'
 }

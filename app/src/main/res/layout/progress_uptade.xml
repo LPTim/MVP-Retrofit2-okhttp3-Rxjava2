@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:gastudio="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/tv_textview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="30dp"
+        android:textColor="@color/colorAccent"
+        android:textSize="20sp" />
+
+    <com.gastudio.downloadloadding.library.GADownloadingView
+        android:id="@+id/ga_downloading"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        gastudio:arrow_color="@android:color/white"
+        android:layout_centerInParent="true"
+        gastudio:done_text_color="@android:color/holo_red_dark"
+        gastudio:loading_circle_back_color="@android:color/holo_orange_dark"
+        gastudio:loading_line_color="@android:color/white"
+        gastudio:progress_line_color="@android:color/holo_green_light"
+        gastudio:progress_text_color="@android:color/holo_blue_bright" />
+</RelativeLayout>

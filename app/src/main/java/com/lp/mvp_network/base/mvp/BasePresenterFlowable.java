@@ -3,24 +3,24 @@ package com.lp.mvp_network.base.mvp;
 
 import com.lp.mvp_network.api.ApiRetrofit;
 import com.lp.mvp_network.api.ApiServer;
-import com.lp.mvp_network.base.file.FileObserver;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
+
 /**
  * File descripition:   创建Presenter基类
  *
  * @author lp
  * @date 2018/6/19
  */
-public class BasePresenter<V extends BaseView> {
+public class BasePresenterFlowable<V extends BaseView> {
     private CompositeDisposable compositeDisposable;
     public V baseView;
     protected ApiServer apiServer = ApiRetrofit.getInstance().getApiService();
 
-    public BasePresenter(V baseView) {
+    public BasePresenterFlowable(V baseView) {
         this.baseView = baseView;
     }
     /**
@@ -39,21 +39,13 @@ public class BasePresenter<V extends BaseView> {
         return baseView;
     }
 
-    public void addDisposable(Observable<?> observable, BaseObserver observer) {
+    public void addDisposable(Observable<?> observable, BaseObserverFlowable observer) {
         if (compositeDisposable == null) {
             compositeDisposable = new CompositeDisposable();
         }
-        compositeDisposable.add(observable.subscribeOn(Schedulers.io())
+       /* compositeDisposable.add(observable.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(observer));
-    }
-    public void addFileDisposable(Observable<?> observable, FileObserver observer) {
-        if (compositeDisposable == null) {
-            compositeDisposable = new CompositeDisposable();
-        }
-        compositeDisposable.add(observable.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(observer));
+                .subscribeWith(observer));*/
     }
 
     public void removeDisposable() {

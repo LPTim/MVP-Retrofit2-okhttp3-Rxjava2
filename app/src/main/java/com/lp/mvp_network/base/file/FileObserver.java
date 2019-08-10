@@ -1,7 +1,7 @@
-package com.lp.mvp_network.base.mvp;
+package com.lp.mvp_network.base.file;
 
 import com.google.gson.JsonParseException;
-import com.lp.mvp_network.base.BaseContent;
+import com.lp.mvp_network.base.mvp.BaseView;
 
 import org.json.JSONException;
 
@@ -14,14 +14,14 @@ import io.reactivex.observers.DisposableObserver;
 import retrofit2.HttpException;
 
 /**
- * File descripition:   数据处理基类
+ * File descripition:
  *
  * @author lp
- * @date 2018/6/19
+ * @date 2019/8/6
  */
-
-public abstract class BaseObserver<T> extends DisposableObserver<BaseModel<T>> {
+public abstract class FileObserver<T> extends DisposableObserver<T> {
     protected BaseView view;
+
     /**
      * 网络连接失败  无网
      */
@@ -48,44 +48,27 @@ public abstract class BaseObserver<T> extends DisposableObserver<BaseModel<T>> {
      */
     public static final int NOT_TRUE_OVER = 1004;
 
-
-    public BaseObserver(BaseView view) {
+    public FileObserver(BaseView view) {
         this.view = view;
-    }
-    public BaseObserver() {
     }
 
     @Override
     protected void onStart() {
         if (view != null) {
-            view.showLoading();
+            view.showProgress();
         }
     }
 
     @Override
-    public void onNext(BaseModel<T> o) {
-//        T t = o.getData();
-        try {
-            if (view != null) {
-                view.hideLoading();
-            }
-            if (o.getError_code() == BaseContent.basecode || o.getError_code() == 1) {
-                onSuccess(o);
-            } else {
-                if (view != null) {
-                    view.onErrorCode(o);
-                }
-                //非  true的所有情况
-                onException(PARSE_ERROR, o.getReason());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            onError(e.toString());
-        }
+    public void onNext(T t) {
+        onSuccess(t);
     }
 
     @Override
     public void onError(Throwable e) {
+        if (view != null) {
+            view.hideProgress();
+        }
         if (view != null) {
             view.hideLoading();
         }
@@ -114,7 +97,6 @@ public abstract class BaseObserver<T> extends DisposableObserver<BaseModel<T>> {
         }
     }
 
-
     private void onException(int unknownError, String message) {
         switch (unknownError) {
             case CONNECT_ERROR:
@@ -138,15 +120,15 @@ public abstract class BaseObserver<T> extends DisposableObserver<BaseModel<T>> {
         }
     }
 
-    //消失写到这 有一定的延迟  对dialog显示有影响
     @Override
     public void onComplete() {
-       /* if (view != null) {
-            view.hideLoading();
-        }*/
+        if (view != null) {
+            view.hideProgress();
+        }
     }
 
-    public abstract void onSuccess(BaseModel<T> o);
+    public abstract void onSuccess(T o);
 
     public abstract void onError(String msg);
+
 }

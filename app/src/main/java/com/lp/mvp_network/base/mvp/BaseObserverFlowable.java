@@ -1,7 +1,9 @@
 package com.lp.mvp_network.base.mvp;
 
+
 import com.google.gson.JsonParseException;
 import com.lp.mvp_network.base.BaseContent;
+import com.lp.mvp_network.utils.NetWorkUtils;
 
 import org.json.JSONException;
 
@@ -11,6 +13,7 @@ import java.net.UnknownHostException;
 import java.text.ParseException;
 
 import io.reactivex.observers.DisposableObserver;
+import io.reactivex.subscribers.DisposableSubscriber;
 import retrofit2.HttpException;
 
 /**
@@ -20,7 +23,7 @@ import retrofit2.HttpException;
  * @date 2018/6/19
  */
 
-public abstract class BaseObserver<T> extends DisposableObserver<BaseModel<T>> {
+public abstract class BaseObserverFlowable<T> extends DisposableSubscriber<BaseModel<T>> {
     protected BaseView view;
     /**
      * 网络连接失败  无网
@@ -49,10 +52,8 @@ public abstract class BaseObserver<T> extends DisposableObserver<BaseModel<T>> {
     public static final int NOT_TRUE_OVER = 1004;
 
 
-    public BaseObserver(BaseView view) {
+    public BaseObserverFlowable(BaseView view) {
         this.view = view;
-    }
-    public BaseObserver() {
     }
 
     @Override
@@ -69,12 +70,10 @@ public abstract class BaseObserver<T> extends DisposableObserver<BaseModel<T>> {
             if (view != null) {
                 view.hideLoading();
             }
-            if (o.getError_code() == BaseContent.basecode || o.getError_code() == 1) {
+            if (o.getError_code() == BaseContent.basecode) {
                 onSuccess(o);
             } else {
-                if (view != null) {
-                    view.onErrorCode(o);
-                }
+                view.onErrorCode(o);
                 //非  true的所有情况
                 onException(PARSE_ERROR, o.getReason());
             }
@@ -150,3 +149,5 @@ public abstract class BaseObserver<T> extends DisposableObserver<BaseModel<T>> {
 
     public abstract void onError(String msg);
 }
+
+

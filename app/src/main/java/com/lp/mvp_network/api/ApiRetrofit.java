@@ -1,6 +1,8 @@
 package com.lp.mvp_network.api;
 
 
+import android.text.TextUtils;
+
 import com.franmontiel.persistentcookiejar.PersistentCookieJar;
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
@@ -9,14 +11,19 @@ import com.google.gson.GsonBuilder;
 import com.lp.mvp_network.App;
 import com.lp.mvp_network.base.BaseContent;
 import com.lp.mvp_network.base.cookie.CookieManger;
+import com.lp.mvp_network.base.file.ProgressResponseBody;
 import com.lp.mvp_network.base.gson.DoubleDefaultAdapter;
 import com.lp.mvp_network.base.gson.IntegerDefaultAdapter;
 import com.lp.mvp_network.base.gson.LongDefaultAdapter;
 import com.lp.mvp_network.base.gson.StringNullAdapter;
+import com.lp.mvp_network.base.mvp.BaseView;
+import com.lp.mvp_network.utils.L;
 import com.lp.mvp_network.utils.NetWorkUtils;
 import com.orhanobut.logger.Logger;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.CacheControl;
@@ -44,25 +51,53 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiRetrofit {
     private String TAG = "ApiRetrofit %s";
-    private static ApiRetrofit apiRetrofit;
+    private static ApiRetrofit mApiRetrofit;
     private Retrofit retrofit;
     private ApiServer apiServer;
 
     private Gson gson;
     private static final int DEFAULT_TIMEOUT = 15;
 
+    private static List<Retrofit> mRetrofitList = new ArrayList<>();
+    private static List<ApiRetrofit> mApiRetrofitList = new ArrayList<>();
+    public static String mBaseUrl = BaseContent.baseUrl;
 
-    public ApiRetrofit() {
-        OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
-        httpClientBuilder
-                .cookieJar(new CookieManger(App.getContext()))
-                .addInterceptor(interceptor)
-                .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
-                .writeTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
-                .readTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
-                .retryOnConnectionFailure(true);//错误重联
+    private static BaseView mBaseView = null;
 
+    private static volatile Type mType = Type.BASE;
 
+    public enum Type {
+        FILE,
+        BASE,
+        BASE_URL,
+    }
+
+    public Type getType() {
+        return mType;
+    }
+
+    public static void setType(Type type) {
+        mType = type;
+    }
+
+    /**
+     * 文件处理
+     *
+     * @param httpClientBuilder
+     */
+    public void initFileClient(OkHttpClient.Builder httpClientBuilder) {
+        /**
+         * 处理文件下载进度展示所需
+         */
+        httpClientBuilder.addNetworkInterceptor(new ProgressInterceptor());
+    }
+
+    /**
+     * 默认所需
+     *
+     * @param httpClientBuilder
+     */
+    public void initDefaultClient(OkHttpClient.Builder httpClientBuilder) {
         /**
          * 处理一些识别识别不了 ipv6手机，如小米  实现方案  将ipv6与ipv4置换位置，首先用ipv4解析
          */
@@ -85,14 +120,42 @@ public class ApiRetrofit {
         /**
          * 添加日志拦截
          */
-        httpClientBuilder.addInterceptor(interceptor);
+        httpClientBuilder.addInterceptor(new JournalInterceptor());
+
+        /**
+         * 添加日志拦截  第三方框架方案
+         */
+//        HttpLoggingInterceptor logInterceptor = new HttpLoggingInterceptor();
+//        logInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+//        httpClientBuilder.addInterceptor(logInterceptor);
         /**
          * 添加请求头
          */
-        httpClientBuilder.addInterceptor(new HeadUrlInterceptor());
+//        httpClientBuilder.addInterceptor(new HeadUrlInterceptor());
+    }
+
+
+    public ApiRetrofit() {
+        OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
+        httpClientBuilder
+                .cookieJar(new CookieManger(App.getContext()))
+                .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
+                .writeTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
+                .readTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true);//错误重联
+
+        switch (getType()) {
+            case FILE:
+                initFileClient(httpClientBuilder);
+                break;
+            case BASE:
+            case BASE_URL:
+                initDefaultClient(httpClientBuilder);
+                break;
+        }
 
         retrofit = new Retrofit.Builder()
-                .baseUrl(BaseContent.baseUrl)
+                .baseUrl(mBaseUrl)
                 .addConverterFactory(GsonConverterFactory.create(buildGson()))//添加json转换框架(正常转换框架)
 //                .addConverterFactory(MyGsonConverterFactory.create(buildGson()))//添加json自定义（根据需求，此种方法是拦截gson解析所做操作）
                 //支持RxJava2
@@ -101,10 +164,12 @@ public class ApiRetrofit {
                 .build();
 
         apiServer = retrofit.create(ApiServer.class);
+        mRetrofitList.add(retrofit);
     }
 
+
     /**
-     * 增加后台返回""和"null"的处理,如果后台返回格式正常，此处不需要添加
+     * 增加后台返回""和"null"的处理,如果后台返回格式正常
      * 1.int=>0
      * 2.double=>0.00
      * 3.long=>0L
@@ -127,51 +192,117 @@ public class ApiRetrofit {
         return gson;
     }
 
+    /**
+     * 默认使用方式
+     *
+     * @return
+     */
     public static ApiRetrofit getInstance() {
-        if (apiRetrofit == null) {
-            synchronized (Object.class) {
-                if (apiRetrofit == null) {
-                    apiRetrofit = new ApiRetrofit();
-                }
+        setType(Type.BASE);
+        mBaseView = null;
+        mBaseUrl = BaseContent.baseUrl;
+
+        return initRetrofit();
+    }
+
+    /**
+     * 文件下载使用方式
+     *
+     * @param baseView
+     * @return
+     */
+    public static ApiRetrofit getFileInstance(BaseView baseView) {
+        setType(Type.FILE);
+        mBaseView = baseView;
+        mBaseUrl = BaseContent.baseUrl + "file/";
+
+        return initRetrofit();
+    }
+
+    /**
+     * 动态改变baseUrl使用方式
+     *
+     * @param baseUrl
+     * @return
+     */
+    public static ApiRetrofit getBaseUrlInstance(String baseUrl) {
+        setType(Type.BASE_URL);
+        mBaseView = null;
+        if (!TextUtils.isEmpty(baseUrl)) {
+            mBaseUrl = baseUrl;
+        } else {
+            mBaseUrl = BaseContent.baseUrl;
+        }
+        return initRetrofit();
+    }
+
+    private static ApiRetrofit initRetrofit() {
+        int mIndex = -1;
+        for (int i = 0; i < mRetrofitList.size(); i++) {
+            if (mBaseUrl.equals(mRetrofitList.get(i).baseUrl().toString())) {
+                mIndex = i;
+                break;
             }
         }
-        return apiRetrofit;
+
+        //新的baseUrl
+        if (mIndex == -1) {
+            synchronized (Object.class) {
+                mApiRetrofit = new ApiRetrofit();
+                mApiRetrofitList.add(mApiRetrofit);
+                return mApiRetrofit;
+            }
+        } else {
+            //以前已经创建过的baseUrl
+            return mApiRetrofitList.get(mIndex);
+        }
     }
+
 
     public ApiServer getApiService() {
         return apiServer;
     }
 
+
     /**
      * 请求访问quest    打印日志
      * response拦截器
      */
-    private Interceptor interceptor = new Interceptor() {
+    public class JournalInterceptor implements Interceptor {
         @Override
         public Response intercept(Chain chain) throws IOException {
             Request request = chain.request();
-            long startTime = System.currentTimeMillis();
-            Response response = chain.proceed(chain.request());
-            long endTime = System.currentTimeMillis();
-            long duration = endTime - startTime;
-            MediaType mediaType = response.body().contentType();
-            String content = response.body().string();
+            try {
+                long startTime = System.currentTimeMillis();
+                Response response = chain.proceed(request);
+                if (response == null) {
+                    return chain.proceed(request);
+                }
+                long endTime = System.currentTimeMillis();
+                long duration = endTime - startTime;
+                MediaType mediaType = response.body().contentType();
+                String content = response.body().string();
 
-            Logger.wtf(TAG, "----------Request Start----------------");
-            Logger.e(TAG, "| " + request.toString() + "===========" + request.headers().toString());
-            Logger.json(content);
-            Logger.e(content);
-            Logger.wtf(TAG, "----------Request End:" + duration + "毫秒----------");
+                Logger.wtf(TAG, "----------Request Start----------------");
+                Logger.e(TAG, "| " + request.toString() + "===========" + request.headers().toString());
+                Logger.json(content);
+                Logger.e(content);
+                Logger.wtf(TAG, "----------Request End:" + duration + "毫秒----------");
 
-            return response.newBuilder()
-                    .body(ResponseBody.create(mediaType, content))
-                    .build();
+                return response.newBuilder()
+                        .body(ResponseBody.create(mediaType, content))
+                        .build();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return chain.proceed(request);
+            }
         }
-    };
+    }
 
     /**
      * 添加  请求头
      */
+
     public class HeadUrlInterceptor implements Interceptor {
         @Override
         public Response intercept(Chain chain) throws IOException {
@@ -185,6 +316,33 @@ public class ApiRetrofit {
 //                    .addHeader("_identity",  cookie_value)
                     .build();
             return chain.proceed(request);
+        }
+    }
+
+
+    /**
+     * 文件下载进度拦截
+     */
+    public class ProgressInterceptor implements Interceptor {
+        @Override
+        public Response intercept(Chain chain) throws IOException {
+            Request request = chain.request();
+            if (mBaseView != null) {
+                Response response = chain.proceed(request);
+                return response.newBuilder().body(new ProgressResponseBody(response.body(),
+                        new ProgressResponseBody.ProgressListener() {
+                            @Override
+                            public void onProgress(long totalSize, long downSize) {
+                                int progress = (int) (downSize * 100 / totalSize);
+                                if (mBaseView != null) {
+                                    mBaseView.onProgress(progress);
+                                    L.e("文件下载速度 === " + progress);
+                                }
+                            }
+                        })).build();
+            } else {
+                return chain.proceed(request);
+            }
         }
     }
 
@@ -276,7 +434,7 @@ public class ApiRetrofit {
     /**
      * 特殊返回内容  处理方案
      */
-    public class MockInterceptor implements Interceptor{
+    public class MockInterceptor implements Interceptor {
         @Override
         public Response intercept(Chain chain) throws IOException {
             Gson gson = new Gson();
@@ -288,7 +446,7 @@ public class ApiRetrofit {
                     .protocol(Protocol.HTTP_1_0)
                     .addHeader("content-type", "application/json");
             Request request = chain.request();
-            if(request.url().toString().contains(BaseContent.baseUrl)) { //拦截指定地址
+            if (request.url().toString().contains(BaseContent.baseUrl)) { //拦截指定地址
                 String responseString = "{\n" +
                         "\t\"success\": true,\n" +
                         "\t\"data\": [{\n" +
@@ -370,7 +528,7 @@ public class ApiRetrofit {
                         "}";
                 responseBuilder.body(ResponseBody.create(MediaType.parse("application/json"), responseString.getBytes()));//将数据设置到body中
                 response = responseBuilder.build(); //builder模式构建response
-            }else{
+            } else {
                 response = chain.proceed(request);
             }
             return response;

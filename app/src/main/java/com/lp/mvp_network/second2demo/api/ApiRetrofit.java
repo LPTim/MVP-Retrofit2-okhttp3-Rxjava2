@@ -56,9 +56,8 @@ public class ApiRetrofit {
     public ApiRetrofit() {
         OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder();
         httpClientBuilder
-                .cookieJar(new CookieManger(App.getContext()))
                 .addInterceptor(interceptor)
-                .addInterceptor(new MockInterceptor())
+                .addInterceptor(new MockInterceptor2())
                 .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
                 .writeTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
                 .readTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
@@ -387,39 +386,10 @@ public class ApiRetrofit {
             if(request.url().toString().contains(BaseContent.baseUrl)) { //拦截指定地址
                 String responseString = "{\n" +
                         "\t\"success\": false,\n" +
-                        "\t\"data\": [{\n" +
-                        "\t\t\"stationId\": 1,\n" +
-                        "\t\t\"stationName\": \"流溪河水库\",\n" +
-                        "\t\t\"alarmList\": [{\n" +
-                        "\t\t\t\"datatime\": 1557212400000,\n" +
-                        "\t\t\t\"itemList\": [{\n" +
-                        "\t\t\t\t\"station_id\": 1,\n" +
-                        "\t\t\t\t\"factor_id\": 4,\n" +
-                        "\t\t\t\t\"datatime\": 1557212400000,\n" +
-                        "\t\t\t\t\"factor_name\": \"浊度\",\n" +
-                        "\t\t\t\t\"unit\": \"NTU\",\n" +
-                        "\t\t\t\t\"value\": 500.0\n" +
-                        "\t\t\t}]\n" +
-                        "\t\t}, {\n" +
-                        "\t\t\t\"datatime\": 1557230400000,\n" +
-                        "\t\t\t\"itemList\": [{\n" +
-                        "\t\t\t\t\"station_id\": 1,\n" +
-                        "\t\t\t\t\"factor_id\": 7,\n" +
-                        "\t\t\t\t\"datatime\": 1557230400000,\n" +
-                        "\t\t\t\t\"factor_name\": \"总磷\",\n" +
-                        "\t\t\t\t\"unit\": \"mg/L\",\n" +
-                        "\t\t\t\t\"value\": 0.21\n" +
-                        "\t\t\t}, {\n" +
-                        "\t\t\t\t\"station_id\": 1,\n" +
-                        "\t\t\t\t\"factor_id\": 8,\n" +
-                        "\t\t\t\t\"datatime\": 1557230400000,\n" +
-                        "\t\t\t\t\"factor_name\": \"总氮\",\n" +
-                        "\t\t\t\t\"unit\": \"mg/L\",\n" +
-                        "\t\t\t\t\"value\": 2.19\n" +
-                        "\t\t\t}]\n" +
-                        "\t\t}]\n" +
-                        "\t}],\n" +
-                        "\t\"request_time\": \"2019-06-06T09:40:08.297+08:00\"\n" +
+                        "\t\"message\": \"用户未认证或token过期，请重新登录后继续\",\n" +
+                        "\t\"request_time\": \"2019-06-10T10:15:09.132+08:00\",\n" +
+                        "\t\"error\": \"UNAUTHENTICATED\",\n" +
+                        "\t\"path\": \"/error\"\n" +
                         "}";
                 responseBuilder.body(ResponseBody.create(MediaType.parse("application/json"), responseString.getBytes()));//将数据设置到body中
                 response = responseBuilder.build(); //builder模式构建response

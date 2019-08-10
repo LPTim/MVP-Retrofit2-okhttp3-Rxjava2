@@ -8,6 +8,13 @@
 
     <include layout="@layout/app_title" />
 
+    <TextView
+        style="@style/button_style"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="注:BaseModle需改成接口对应，basecode同理"
+        android:textColor="@color/colorPrimary" />
+
     <Button
         android:id="@+id/btn_first"
         style="@style/button_style"
@@ -17,20 +24,47 @@
         android:id="@+id/btn_second"
         style="@style/button_style"
         android:text="上传图片" />
+
+    <Button
+        android:id="@+id/btn_second_2"
+        style="@style/button_style"
+        android:text="上传文件进度演示" />
+
     <Button
         android:id="@+id/btn_third"
         style="@style/button_style"
-        android:text="特殊结构演示" />
+        android:text="MVC请求演示" />
+
+    <Button
+        android:id="@+id/btn_forth"
+        style="@style/button_style"
+        android:text="测试多baseUrl1" />
+
+    <Button
+        android:id="@+id/btn_fifth"
+        style="@style/button_style"
+        android:text="测试多baseUrl2" />
+
+    <Button
+        android:id="@+id/btn_six"
+        style="@style/button_style"
+        android:text="测试多baseUrl3" />
+
+    <Button
+        android:id="@+id/btn_down"
+        style="@style/button_style"
+        android:text="下载文件演示" />
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_marginTop="12dp"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_marginTop="12dp">
+
         <TextView
             android:id="@+id/tv_text"
             android:layout_width="match_parent"
-            android:textColor="@color/colorAccent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:textColor="@color/colorAccent" />
     </ScrollView>
 
 </LinearLayout>

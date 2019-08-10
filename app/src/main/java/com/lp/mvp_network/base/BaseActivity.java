@@ -1,20 +1,27 @@
 package com.lp.mvp_network.base;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import com.gastudio.downloadloadding.library.GADownloadingView;
 import com.hjq.toast.ToastUtils;
+import com.lp.mvp_network.R;
 import com.lp.mvp_network.base.mvp.BaseModel;
 import com.lp.mvp_network.base.mvp.BasePresenter;
 import com.lp.mvp_network.base.mvp.BaseView;
 import com.lp.mvp_network.utils.KeyBoardUtils;
 import com.lp.mvp_network.utils.StatusBarUtil;
 import com.lp.mvp_network.view.LoadingDialog;
+import com.lp.mvp_network.view.ProgressDialog;
 
 /**
  * File descripition: activity基类
@@ -31,6 +38,7 @@ public abstract class BaseActivity<P extends BasePresenter> extends AppCompatAct
     protected abstract P createPresenter();
 
     private LoadingDialog loadingDialog;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,7 +95,7 @@ public abstract class BaseActivity<P extends BasePresenter> extends AppCompatAct
      */
     @Override
     public void onErrorCode(BaseModel model) {
-        if (model.getErrcode() == 10000000) {
+        if (model.getError_code() == 10000000) {
             //处理些后续逻辑   如果某个页面不想实现  子类重写这个方法  将super去掉  自定义方法
 //            App.put();
 //            startActivity(LoginActivity.class);
@@ -139,11 +147,40 @@ public abstract class BaseActivity<P extends BasePresenter> extends AppCompatAct
         if (loadingDialog != null) {
             loadingDialog.dismiss();
         }
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+        }
         if (mPresenter != null) {
             mPresenter.detachView();
         }
     }
 
+
+    @Override
+    public void showProgress() {
+        if (progressDialog == null) {
+            progressDialog = new ProgressDialog(this);
+        }
+        progressDialog.getProgressBar().performAnimation();
+        if (!progressDialog.isShowing()) {
+            progressDialog.show();
+        }
+    }
+
+    @Override
+    public void hideProgress() {
+        if (progressDialog != null) {
+            progressDialog.getProgressBar().releaseAnimation();
+            progressDialog.dismiss();
+        }
+    }
+
+    @Override
+    public void onProgress(int progress) {
+        if (progressDialog != null) {
+            progressDialog.updateProgress(progress);
+        }
+    }
 
     /**
      * [页面跳转]

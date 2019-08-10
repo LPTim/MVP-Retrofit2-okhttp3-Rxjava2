@@ -47,6 +47,8 @@ public class RetrofitUtil {
         return part;
     }
 
+
+
     public static List<File> initImages(List<String> mImages) {
         List<File> listPicture = new ArrayList<>();
         listPicture.clear();
